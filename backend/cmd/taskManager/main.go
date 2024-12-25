@@ -4,28 +4,25 @@ import (
 	"log"
 
 	db "github.com/Aniekan210/taskManager/backend/internals/controllers"
+	"github.com/Aniekan210/taskManager/backend/internals/routes"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func main() {
 	r := gin.Default()
 
-	// Initialize Database Contoller
-	DB := &db.Database{
-		Client: &mongo.Client{},
-		DBname: "aniekan",
-	}
-
 	// Initialize Database
-	err := DB.Init()
+	err := db.Init()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	defer func() {
-		if err := DB.Disconnect(); err != nil {
+		if err := db.Disconnect(); err != nil {
 			log.Fatal("Error disconnecting from the database: ", err)
 		}
 	}()
+
+	routes.RegisterUserRoutes(r)
+
 	r.Run()
 }

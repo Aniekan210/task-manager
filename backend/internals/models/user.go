@@ -5,13 +5,13 @@ import (
 )
 
 type User struct {
-	ID           primitive.ObjectID `bson:"_id"`
-	TeamIDs      []TeamInfo         `bson:"team_ids"`
-	Username     string             `bson:"username"`
-	PasswordHash string             `bson:"passwordHash"`
+	ID             primitive.ObjectID `bson:"_id"`             // User id
+	Teams          []TeamInfo         `bson:"teams"`           // List of team ids and roles in the teams
+	Username       string             `bson:"username"`        // Unique username of the user
+	HashedPassword []byte             `bson:"hashed_password"` // Hashed password of the user
 }
 
 type TeamInfo struct {
-	TeamID primitive.ObjectID `bson:"_id"`
-	Role   string             `bson:"role"`
+	ID   primitive.ObjectID `bson:"team_id"` // Id of team
+	Role string             `bson:"role"`    // "creator", "editor", "viewer"
 }

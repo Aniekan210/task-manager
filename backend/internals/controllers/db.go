@@ -7,12 +7,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Database struct {
-	Client *mongo.Client
-	DBname string
-}
+var Client *mongo.Client
+var DBName string
 
-func (d *Database) Init() error {
+func Init() error {
 	mongoURI := "mongodb+srv://aniekan:DUwKNrxGtBJFoxz7@aniekan.qieqv.mongodb.net/?retryWrites=true&w=majority&appName=aniekan"
 	opts := options.Client().ApplyURI(mongoURI)
 
@@ -22,13 +20,14 @@ func (d *Database) Init() error {
 		return err
 	}
 
-	d.Client = client
+	Client = client
+	DBName = "aniekan"
 	return nil
 }
 
-func (d *Database) Disconnect() error {
-	if d.Client != nil {
-		err := d.Client.Disconnect(context.Background())
+func Disconnect() error {
+	if Client != nil {
+		err := Client.Disconnect(context.Background())
 		if err != nil {
 			return err
 		}
