@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	controls "github.com/Aniekan210/taskManager/backend/internals/controllers"
-	"github.com/Aniekan210/taskManager/backend/internals/middleware"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -16,7 +15,6 @@ func RegisterAuthRoutes(router *gin.Engine) {
 	{
 		auth.POST("/register", registerUser)
 		auth.POST("/login", userLogin)
-		auth.GET("/status", middleware.Authentication(), status)
 	}
 }
 
@@ -138,13 +136,5 @@ func userLogin(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": jwt,
-	})
-}
-
-func status(ctx *gin.Context) {
-	id, _ := ctx.Get("claims")
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"current_user": id,
 	})
 }
