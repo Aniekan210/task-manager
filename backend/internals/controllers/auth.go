@@ -15,9 +15,9 @@ func GenerateJWT(user *models.User) (string, error) {
 
 	// Create a new claims object with usermodels
 	claims := jwt.MapClaims{
-		"user_id": user.ID,                               // Add user ID
-		"exp":     time.Now().Add(time.Hour * 72).Unix(), // Expiration time (3 days)
-		"iat":     time.Now().Unix(),                     // Issued at time
+		"username": user.Username,                         // Add username
+		"exp":      time.Now().Add(time.Hour * 72).Unix(), // Expiration time (3 days)
+		"iat":      time.Now().Unix(),                     // Issued at time
 	}
 
 	// Create a new token
@@ -50,7 +50,8 @@ func ValidateJWT(tokenString string) (jwt.MapClaims, error) {
 	}
 
 	// Extract the claims (payload) if the token is valid
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
 		return claims, nil
 	}
 

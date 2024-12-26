@@ -109,7 +109,7 @@ func userLogin(ctx *gin.Context) {
 
 	// Find user in database
 	user, err := controls.FindUserByUsername(req.Username)
-	if (err != nil) && (err.Error() != "user not found") {
+	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})

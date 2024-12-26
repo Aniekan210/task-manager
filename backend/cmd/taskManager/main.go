@@ -31,6 +31,7 @@ func main() {
 	}()
 
 	routes.RegisterAuthRoutes(r)
+	routes.RegisterUserRoutes(r)
 
 	r.Run()
 }

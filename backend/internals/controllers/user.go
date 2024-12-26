@@ -7,6 +7,7 @@ import (
 	"github.com/Aniekan210/taskManager/backend/internals/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -56,4 +57,36 @@ func FindUserByUsername(username string) (*models.User, error) {
 	}
 
 	return &user, nil
+}
+
+func AddToUserTeamInfo(username string, teamID primitive.ObjectID, role string) error {
+	user, err := FindUserByUsername(username)
+	if err != nil {
+		return err
+	}
+
+	// Check if user is in team
+	for _, team := range user.Teams {
+		if team.ID == teamID {
+			return errors.New("user is already in team")
+		}
+	}
+
+	newTeams := append(user.Teams, models.TeamInfo{
+		ID:   teamID,
+		Role: role,
+	})
+
+	// Get the collection
+	collection := Client.Database(DBName).Collection("users")
+	opts := options.Update().SetUpsert(true)
+	filter := bson.D{{Key: "_id", Value: user.ID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "teams", Value: newTeams}}}}
+
+	_, err = collection.UpdateOne(context.TODO(), filter, update, opts)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
