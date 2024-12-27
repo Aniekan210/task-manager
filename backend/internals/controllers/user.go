@@ -5,11 +5,21 @@ import (
 	"errors"
 
 	"github.com/Aniekan210/taskManager/backend/internals/models"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
+
+func GetUsernameFromClaims(claims any) string {
+	jwtClaims, _ := claims.(jwt.MapClaims)
+
+	name := jwtClaims["username"]
+	username, _ := name.(string)
+
+	return username
+}
 
 func AddUser(username string, password string) error {
 

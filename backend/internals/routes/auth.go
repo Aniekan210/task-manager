@@ -135,6 +135,7 @@ func userLogin(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"token": jwt,
+		"token":   jwt,
+		"message": "logged in succesfully",
 	})
 }

@@ -7,16 +7,49 @@ import (
 
 	controls "github.com/Aniekan210/taskManager/backend/internals/controllers"
 	"github.com/Aniekan210/taskManager/backend/internals/middleware"
+	"github.com/Aniekan210/taskManager/backend/internals/models"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 func RegisterUserRoutes(router *gin.Engine) {
-	auth := router.Group("/user")
-	auth.Use(middleware.Authentication())
+	user := router.Group("/user")
+	user.Use(middleware.Authentication())
 	{
-		auth.POST("/create-team", createTeam)
+		user.GET("/", getUser)
+		user.POST("/create-team", createTeam)
+		user.POST("/join-team", joinTeam)
 	}
+}
+
+func getUser(ctx *gin.Context) {
+
+	type response struct {
+		Username string
+		Teams    []models.TeamInfo
+	}
+
+	var res response
+
+	// Get username from claims
+	claims, _ := ctx.Get("claims")
+	username := controls.GetUsernameFromClaims(claims)
+
+	// get user by username
+	user, err := controls.FindUserByUsername(username)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// fill response body
+	res.Teams = user.Teams
+	res.Username = user.Username
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"user": res,
+	})
 }
 
 func createTeam(ctx *gin.Context) {
@@ -54,10 +87,7 @@ func createTeam(ctx *gin.Context) {
 
 	//Get username from claims
 	claims, _ := ctx.Get("claims")
-	jwtClaims, _ := claims.(jwt.MapClaims)
-
-	name := jwtClaims["username"]
-	username, _ := name.(string)
+	username := controls.GetUsernameFromClaims(claims)
 
 	teamID, err := controls.CreateTeam(username, req.TeamName, req.TeamDescription)
 	if err != nil {
@@ -67,7 +97,7 @@ func createTeam(ctx *gin.Context) {
 		return
 	}
 
-	err = controls.AddToUserTeamInfo(username, teamID, "creator")
+	err = controls.AddUserToTeam(username, teamID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -77,5 +107,40 @@ func createTeam(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, gin.H{
 		"message": "team created successfully",
+	})
+}
+
+func joinTeam(ctx *gin.Context) {
+
+	type request struct {
+		JoinCode string `json:"join_code" binding:"required"`
+	}
+
+	var req request
+
+	//bind the json
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// get username from claims
+	claims, _ := ctx.Get("claims")
+	username := controls.GetUsernameFromClaims(claims)
+
+	// join the team
+	err = controls.JoinTeam(username, req.JoinCode)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "joined team succesfully",
 	})
 }
