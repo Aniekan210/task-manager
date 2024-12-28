@@ -105,21 +105,23 @@ func FindTeamByJoinCode(joinCode string) (*models.Team, error) {
 	return &team, nil
 }
 
-func JoinTeam(username string, joinCode string) error {
-	//Get team
-	team, err := FindTeamByJoinCode(joinCode)
+func AddProjectToTeam(teamID primitive.ObjectID, projectID primitive.ObjectID) error {
+
+	// Get the team
+	team, err := FindTeamByID(teamID)
 	if err != nil {
 		return err
 	}
 
-	// Add team to user
-	err = AddToUserTeamInfo(username, team.ID, "editor")
-	if err != nil {
-		return err
-	}
+	var newProjects []primitive.ObjectID = append(team.Projects, projectID)
 
-	// add user to team
-	err = AddUserToTeam(username, team.ID)
+	// Get the collection
+	collection := Client.Database(DBName).Collection("teams")
+	opts := options.Update().SetUpsert(true)
+	filter := bson.D{{Key: "_id", Value: teamID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "project_ids", Value: newProjects}}}}
+
+	_, err = collection.UpdateOne(context.TODO(), filter, update, opts)
 	if err != nil {
 		return err
 	}

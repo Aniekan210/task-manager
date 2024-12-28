@@ -9,5 +9,5 @@ type Project struct {
 	Name        string               `bson:"name"`        // Project name
 	Description string               `bson:"description"` // Project description
 	Tasks       []primitive.ObjectID `bson:"task_ids"`    // List of task ids in the project
-	CreatedBy   primitive.ObjectID   `bson:"created_by"`  // Creator of the project
+	CreatedBy   string               `bson:"created_by"`  // Creator of the project
 }

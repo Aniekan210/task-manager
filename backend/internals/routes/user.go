@@ -9,6 +9,7 @@ import (
 	"github.com/Aniekan210/taskManager/backend/internals/middleware"
 	"github.com/Aniekan210/taskManager/backend/internals/models"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func RegisterUserRoutes(router *gin.Engine) {
@@ -18,6 +19,8 @@ func RegisterUserRoutes(router *gin.Engine) {
 		user.GET("/", getUser)
 		user.POST("/create-team", createTeam)
 		user.POST("/join-team", joinTeam)
+
+		user.POST("/create-project", createProject)
 	}
 }
 
@@ -131,8 +134,26 @@ func joinTeam(ctx *gin.Context) {
 	claims, _ := ctx.Get("claims")
 	username := controls.GetUsernameFromClaims(claims)
 
-	// join the team
-	err = controls.JoinTeam(username, req.JoinCode)
+	//Get team
+	team, err := controls.FindTeamByJoinCode(req.JoinCode)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// Add team to user
+	err = controls.AddToUserTeamInfo(username, team.ID, "editor")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// add user to team
+	err = controls.AddUserToTeam(username, team.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -142,5 +163,75 @@ func joinTeam(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "joined team succesfully",
+	})
+}
+
+func createProject(ctx *gin.Context) {
+
+	type request struct {
+		TeamID             string `json:"team_id" binding:"required"`
+		ProjectName        string `json:"project_name" binding:"required"`
+		ProjectDescription string `json:"project_description" binding:"required"`
+	}
+
+	var req request
+
+	// Get request body
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	//Strip team name and description
+	req.ProjectName = strings.TrimSpace(req.ProjectName)
+	req.ProjectDescription = strings.TrimSpace(req.ProjectDescription)
+
+	//validate team name and description
+	if (len([]rune(req.ProjectDescription)) < 10) || (len([]rune(req.ProjectDescription)) > 200) {
+		err = errors.New("project description must be between 10 and 200 characters")
+	}
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	//Get username from claims
+	claims, _ := ctx.Get("claims")
+	username := controls.GetUsernameFromClaims(claims)
+
+	// create project
+	projectID, err := controls.CreateProject(username, req.ProjectName, req.ProjectDescription)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// get team id
+	teamID, err := primitive.ObjectIDFromHex(req.TeamID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// add project to team
+	err = controls.AddProjectToTeam(teamID, projectID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{
+		"message": "project created successfully",
 	})
 }
