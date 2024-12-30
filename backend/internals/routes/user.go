@@ -185,11 +185,11 @@ func createProject(ctx *gin.Context) {
 		return
 	}
 
-	//Strip team name and description
+	//Strip project name and description
 	req.ProjectName = strings.TrimSpace(req.ProjectName)
 	req.ProjectDescription = strings.TrimSpace(req.ProjectDescription)
 
-	//validate team name and description
+	//validate project name and description
 	if (len([]rune(req.ProjectDescription)) < 10) || (len([]rune(req.ProjectDescription)) > 200) {
 		err = errors.New("project description must be between 10 and 200 characters")
 	}
