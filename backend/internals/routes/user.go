@@ -2,6 +2,7 @@ package routes
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -19,7 +20,6 @@ func RegisterUserRoutes(router *gin.Engine) {
 		user.GET("/", getUser)
 		user.POST("/create-team", createTeam)
 		user.POST("/join-team", joinTeam)
-
 		user.POST("/create-project", createProject)
 	}
 }
@@ -161,6 +161,16 @@ func joinTeam(ctx *gin.Context) {
 		return
 	}
 
+	// send notif to team
+	body := fmt.Sprintf("%s has joined Team: %s", username, team.Name)
+	err = controls.CreateNotif(username, team.ID, body)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "joined team succesfully",
 	})
@@ -224,6 +234,16 @@ func createProject(ctx *gin.Context) {
 
 	// add project to team
 	err = controls.AddProjectToTeam(teamID, projectID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// send notif to team
+	body := fmt.Sprintf("%s has created a new Project: %s", username, req.ProjectName)
+	err = controls.CreateNotif(username, teamID, body)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

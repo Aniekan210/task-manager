@@ -1,7 +1,7 @@
 package controls
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/Aniekan210/taskManager/backend/internals/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,6 +16,12 @@ func CreateNotif(username string, teamID primitive.ObjectID, notifBody string) e
 		TeamID:    teamID,
 	}
 
-	fmt.Println(newNotif)
+	// Add user to database
+	collection := Client.Database(DBName).Collection("notifs")
+	_, err := collection.InsertOne(context.Background(), newNotif)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
