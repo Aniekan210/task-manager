@@ -214,17 +214,17 @@ func createProject(ctx *gin.Context) {
 	claims, _ := ctx.Get("claims")
 	username := controls.GetUsernameFromClaims(claims)
 
-	// create project
-	projectID, err := controls.CreateProject(username, req.ProjectName, req.ProjectDescription)
+	// get team id
+	teamID, err := primitive.ObjectIDFromHex(req.TeamID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+			"error": "Invalid Team id",
 		})
 		return
 	}
 
-	// get team id
-	teamID, err := primitive.ObjectIDFromHex(req.TeamID)
+	// create project
+	projectID, err := controls.CreateProject(username, req.ProjectName, req.ProjectDescription)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
