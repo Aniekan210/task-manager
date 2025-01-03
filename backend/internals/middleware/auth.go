@@ -40,6 +40,16 @@ func Authentication() gin.HandlerFunc {
 			return
 		}
 
+		isVerified := claims["isVerified"]
+		verified, _ := isVerified.(bool)
+		if !verified {
+			ctx.JSON(http.StatusUnauthorized, gin.H{
+				"error": "User is not verified yet",
+			})
+			ctx.Abort()
+			return
+		}
+
 		// Pass JWT payload to the request
 		ctx.Set("claims", claims)
 		ctx.Next()

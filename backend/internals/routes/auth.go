@@ -91,6 +91,8 @@ func registerUser(ctx *gin.Context) {
 		return
 	}
 
+	// Send verification email
+
 	// Add the user to database
 	err = controls.AddUser(req.Username, req.Password, req.Email)
 	if err != nil {
