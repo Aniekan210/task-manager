@@ -39,6 +39,7 @@ func AddUser(username string, password string, email string) error {
 		Email:          email,
 		HashedPassword: hashedPassword,
 		Teams:          []models.TeamInfo{},
+		IsVerified:     false,
 	}
 
 	// Add user to database
@@ -51,7 +52,6 @@ func AddUser(username string, password string, email string) error {
 	return nil
 }
 
-// returns false if user doesnt exist
 func FindUserByEmail(email string) (*models.User, error) {
 
 	filter := bson.M{"email": email}
@@ -62,6 +62,33 @@ func FindUserByEmail(email string) (*models.User, error) {
 	// Find a single user by the filter
 	var user models.User
 	err := collection.FindOne(context.Background(), filter).Decode(&user)
+	if err != nil {
+		if err.Error() == "mongo: no documents in result" {
+			// Return a custom error when the user is not found
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func FindUserByID(id string) (*models.User, error) {
+
+	// get team id
+	ID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, errors.New("invalid user id")
+	}
+
+	filter := bson.M{"_id": ID}
+
+	// Get the collection
+	collection := Client.Database(DBName).Collection("users")
+
+	// Find a single user by the filter
+	var user models.User
+	err = collection.FindOne(context.Background(), filter).Decode(&user)
 	if err != nil {
 		if err.Error() == "mongo: no documents in result" {
 			// Return a custom error when the user is not found
@@ -96,6 +123,31 @@ func AddToUserTeamInfo(email string, teamID primitive.ObjectID, role string) err
 	opts := options.Update().SetUpsert(true)
 	filter := bson.D{{Key: "_id", Value: user.ID}}
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "teams", Value: newTeams}}}}
+
+	_, err = collection.UpdateOne(context.TODO(), filter, update, opts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func VerifyUser(id string) error {
+	user, err := FindUserByID(id)
+	if err != nil {
+		return err
+	}
+
+	// Check if user is already verified
+	if user.IsVerified {
+		return errors.New("user is already verified")
+	}
+
+	// Get the collection
+	collection := Client.Database(DBName).Collection("users")
+	opts := options.Update().SetUpsert(true)
+	filter := bson.D{{Key: "_id", Value: user.ID}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "isVerified", Value: true}}}}
 
 	_, err = collection.UpdateOne(context.TODO(), filter, update, opts)
 	if err != nil {
