@@ -49,9 +49,11 @@ func registerUser(ctx *gin.Context) {
 		return
 	}
 
-	// Validating if username and password do not have spaces
-	if (strings.Contains(req.Password, " ")) || (strings.Contains(req.Username, " ")) {
-		err = errors.New("password and username cannot contain spaces")
+	//validate username
+	usernameRegex := `^[a-zA-Z0-9]{8,}$`
+	re = regexp.MustCompile(usernameRegex)
+	if !re.MatchString(req.Username) {
+		err = errors.New("invalid username (no special characters and atleast 8 characters long)")
 	}
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -60,9 +62,11 @@ func registerUser(ctx *gin.Context) {
 		return
 	}
 
-	// Validating length of username and password
-	if (len([]rune(req.Password)) < 8) || (len([]rune(req.Username)) < 8) {
-		err = errors.New("password and username cannot be less than 8 characters")
+	//Validate password
+	passwordRegex := `^[^\s]{8,}$`
+	re = regexp.MustCompile(passwordRegex)
+	if !re.MatchString(req.Password) {
+		err = errors.New("invalid password (atleast 8 characters long and no spaces)")
 	}
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
