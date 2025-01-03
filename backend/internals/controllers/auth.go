@@ -15,6 +15,7 @@ func GenerateJWT(user *models.User) (string, error) {
 
 	// Create a new claims object with usermodels
 	claims := jwt.MapClaims{
+		"email":    user.Email,                            // Add email
 		"username": user.Username,                         // Add username
 		"exp":      time.Now().Add(time.Hour * 24).Unix(), // Expiration time (1 day)
 		"iat":      time.Now().Unix(),                     // Issued at time

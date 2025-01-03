@@ -3,6 +3,7 @@ package routes
 import (
 	"errors"
 	"net/http"
+	"regexp"
 	"strings"
 
 	controls "github.com/Aniekan210/taskManager/backend/internals/controllers"
@@ -22,11 +23,25 @@ func registerUser(ctx *gin.Context) {
 
 	type request struct {
 		Username string `json:"username" binding:"required"`
+		Email    string `json:"email" binding:"required"`
 		Password string `json:"password" binding:"required"`
 	}
 
 	var req request
 	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	//Validate email
+	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	re := regexp.MustCompile(emailRegex)
+	if !re.MatchString(req.Email) {
+		err = errors.New("invalid email")
+	}
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -57,7 +72,7 @@ func registerUser(ctx *gin.Context) {
 	}
 
 	// Check if user exists already
-	user, err := controls.FindUserByUsername(req.Username)
+	user, err := controls.FindUserByEmail(req.Email)
 	if (err != nil) && (err.Error() != "user not found") {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -73,7 +88,7 @@ func registerUser(ctx *gin.Context) {
 	}
 
 	// Add the user to database
-	err = controls.AddUser(req.Username, req.Password)
+	err = controls.AddUser(req.Username, req.Password, req.Email)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -89,7 +104,7 @@ func registerUser(ctx *gin.Context) {
 func userLogin(ctx *gin.Context) {
 
 	type request struct {
-		Username string `json:"username" binding:"required"`
+		Email    string `json:"email" binding:"required"`
 		Password string `json:"password" binding:"required"`
 	}
 
@@ -103,12 +118,25 @@ func userLogin(ctx *gin.Context) {
 		return
 	}
 
-	// Strip leading and trailing whitespace from password and username
-	req.Username = strings.TrimSpace(req.Username)
+	// Strip leading and trailing whitespace from password and email
+	req.Email = strings.TrimSpace(req.Email)
 	req.Password = strings.TrimSpace(req.Password)
 
+	//Validate email
+	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	re := regexp.MustCompile(emailRegex)
+	if !re.MatchString(req.Email) {
+		err = errors.New("invalid email")
+	}
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
 	// Find user in database
-	user, err := controls.FindUserByUsername(req.Username)
+	user, err := controls.FindUserByEmail(req.Email)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

@@ -35,10 +35,10 @@ func getUser(ctx *gin.Context) {
 
 	// Get username from claims
 	claims, _ := ctx.Get("claims")
-	username := controls.GetUsernameFromClaims(claims)
+	email, _ := controls.ParseClaims(claims)
 
 	// get user by username
-	user, err := controls.FindUserByUsername(username)
+	user, err := controls.FindUserByEmail(email)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -90,9 +90,9 @@ func createTeam(ctx *gin.Context) {
 
 	//Get username from claims
 	claims, _ := ctx.Get("claims")
-	username := controls.GetUsernameFromClaims(claims)
+	email, username := controls.ParseClaims(claims)
 
-	teamID, err := controls.CreateTeam(username, req.TeamName, req.TeamDescription)
+	teamID, err := controls.CreateTeam(email, username, req.TeamName, req.TeamDescription)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -100,7 +100,7 @@ func createTeam(ctx *gin.Context) {
 		return
 	}
 
-	err = controls.AddUserToTeam(username, teamID)
+	err = controls.AddUserToTeam(email, teamID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -130,9 +130,9 @@ func joinTeam(ctx *gin.Context) {
 		return
 	}
 
-	// get username from claims
+	// get email and username from claims
 	claims, _ := ctx.Get("claims")
-	username := controls.GetUsernameFromClaims(claims)
+	email, username := controls.ParseClaims(claims)
 
 	//Get team
 	team, err := controls.FindTeamByJoinCode(req.JoinCode)
@@ -144,7 +144,7 @@ func joinTeam(ctx *gin.Context) {
 	}
 
 	// Add team to user
-	err = controls.AddToUserTeamInfo(username, team.ID, "editor")
+	err = controls.AddToUserTeamInfo(email, team.ID, "editor")
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -153,7 +153,7 @@ func joinTeam(ctx *gin.Context) {
 	}
 
 	// add user to team
-	err = controls.AddUserToTeam(username, team.ID)
+	err = controls.AddUserToTeam(email, team.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -163,7 +163,7 @@ func joinTeam(ctx *gin.Context) {
 
 	// send notif to team
 	body := fmt.Sprintf("%s has joined Team: %s", username, team.Name)
-	err = controls.CreateNotif(username, team.ID, body)
+	err = controls.CreateNotif(team.ID, body)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -210,9 +210,9 @@ func createProject(ctx *gin.Context) {
 		return
 	}
 
-	//Get username from claims
+	//Get email from claims
 	claims, _ := ctx.Get("claims")
-	username := controls.GetUsernameFromClaims(claims)
+	_, username := controls.ParseClaims(claims)
 
 	// get team id
 	teamID, err := primitive.ObjectIDFromHex(req.TeamID)
@@ -243,7 +243,7 @@ func createProject(ctx *gin.Context) {
 
 	// send notif to team
 	body := fmt.Sprintf("%s has created a new Project: %s", username, req.ProjectName)
-	err = controls.CreateNotif(username, teamID, body)
+	err = controls.CreateNotif(teamID, body)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

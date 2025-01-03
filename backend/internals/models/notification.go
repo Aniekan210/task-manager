@@ -5,8 +5,7 @@ import (
 )
 
 type Notification struct {
-	ID        primitive.ObjectID `bson:"_id"`
-	Body      string             `bson:"notif_body"`
-	CreatedBy string             `bson:"created_by"`
-	TeamID    primitive.ObjectID `bson:"team_id"`
+	ID     primitive.ObjectID `bson:"_id"`
+	Body   string             `bson:"notif_body"`
+	TeamID primitive.ObjectID `bson:"team_id"`
 }

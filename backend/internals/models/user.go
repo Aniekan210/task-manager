@@ -10,7 +10,7 @@ type User struct {
 	Username       string             `bson:"username"` // username of the user
 	Email          string             `bson:"email"`
 	HashedPassword []byte             `bson:"hashed_password"` // Hashed password of the user
-	IsVerified     bool               `bson"isVerified`
+	IsVerified     bool               `bson:"isVerified"`
 }
 
 type TeamInfo struct {

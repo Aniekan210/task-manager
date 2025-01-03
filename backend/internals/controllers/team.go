@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func CreateTeam(username string, teamName string, teamDescription string) (primitive.ObjectID, error) {
+func CreateTeam(email string, username string, teamName string, teamDescription string) (primitive.ObjectID, error) {
 
 	id := primitive.NewObjectID()
 
@@ -30,7 +30,7 @@ func CreateTeam(username string, teamName string, teamDescription string) (primi
 		return primitive.NilObjectID, err
 	}
 
-	err = AddToUserTeamInfo(username, newTeam.ID, "creator")
+	err = AddToUserTeamInfo(email, newTeam.ID, "creator")
 	if err != nil {
 		return primitive.NilObjectID, err
 	}
@@ -38,7 +38,7 @@ func CreateTeam(username string, teamName string, teamDescription string) (primi
 	return newTeam.ID, nil
 }
 
-func AddUserToTeam(username string, teamID primitive.ObjectID) error {
+func AddUserToTeam(email string, teamID primitive.ObjectID) error {
 
 	// Get the team
 	team, err := FindTeamByID(teamID)
@@ -48,12 +48,12 @@ func AddUserToTeam(username string, teamID primitive.ObjectID) error {
 
 	// Check if user is already in team
 	for _, user := range team.Users {
-		if user == username {
+		if user == email {
 			return errors.New("user is already in team")
 		}
 	}
 
-	var newUsers []string = append(team.Users, username)
+	var newUsers []string = append(team.Users, email)
 
 	// Get the collection
 	collection := Client.Database(DBName).Collection("teams")

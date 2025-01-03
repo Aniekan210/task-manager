@@ -12,16 +12,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GetUsernameFromClaims(claims any) string {
+func ParseClaims(claims any) (string, string) {
 	jwtClaims, _ := claims.(jwt.MapClaims)
 
-	name := jwtClaims["username"]
+	mail := jwtClaims["email"]
+	email, _ := mail.(string)
+
+	name := jwtClaims["userename"]
 	username, _ := name.(string)
 
-	return username
+	return email, username
 }
 
-func AddUser(username string, password string) error {
+func AddUser(username string, password string, email string) error {
 
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -33,6 +36,7 @@ func AddUser(username string, password string) error {
 	user := models.User{
 		ID:             primitive.NewObjectID(),
 		Username:       username,
+		Email:          email,
 		HashedPassword: hashedPassword,
 		Teams:          []models.TeamInfo{},
 	}
@@ -48,9 +52,9 @@ func AddUser(username string, password string) error {
 }
 
 // returns false if user doesnt exist
-func FindUserByUsername(username string) (*models.User, error) {
+func FindUserByEmail(email string) (*models.User, error) {
 
-	filter := bson.M{"username": username}
+	filter := bson.M{"email": email}
 
 	// Get the collection
 	collection := Client.Database(DBName).Collection("users")
@@ -69,8 +73,8 @@ func FindUserByUsername(username string) (*models.User, error) {
 	return &user, nil
 }
 
-func AddToUserTeamInfo(username string, teamID primitive.ObjectID, role string) error {
-	user, err := FindUserByUsername(username)
+func AddToUserTeamInfo(email string, teamID primitive.ObjectID, role string) error {
+	user, err := FindUserByEmail(email)
 	if err != nil {
 		return err
 	}

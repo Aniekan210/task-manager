@@ -7,13 +7,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateNotif(username string, teamID primitive.ObjectID, notifBody string) error {
+func CreateNotif(teamID primitive.ObjectID, notifBody string) error {
 
 	newNotif := models.Notification{
-		ID:        primitive.NewObjectID(),
-		Body:      notifBody,
-		CreatedBy: username,
-		TeamID:    teamID,
+		ID:     primitive.NewObjectID(),
+		Body:   notifBody,
+		TeamID: teamID,
 	}
 
 	// Add user to database
