@@ -1,0 +1,51 @@
+/* [project]/app/globals.css [app-client] (css) */
+@font-face {
+  font-family: Mattone-Black;
+  src: url("/fonts/Mattone-Black.woff2") format("woff2"), url("/fonts/Mattone-Black.woff") format("woff");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Mattone-Bold;
+  src: url("/fonts/Mattone-Bold.woff2") format("woff2"), url("/fonts/Mattone-Bold.woff") format("woff");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Mattone-Regular;
+  src: url("/fonts/Mattone-Regular.woff2") format("woff2"), url("/fonts/Mattone-Regular.woff") format("woff");
+  font-style: normal;
+  font-display: swap;
+}
+
+*, :after, :before {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --background: #18181c;
+  --primary: #fff;
+  --secondary: #b5b5b5;
+  --divider: #acacac;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #fff;
+    --primary: #18181c;
+    --secondary: #575757;
+    --divider: #666;
+  }
+}
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+... (truncated for brevity)

@@ -1,0 +1,51 @@
+/* [project]/app/page.module.css [app-client] (css) */
+.page-module__E0kJGG__page {
+  --gray-rgb: 0, 0, 0;
+  --gray-alpha-200: rgba(var(--gray-rgb), .08);
+  --gray-alpha-100: rgba(var(--gray-rgb), .05);
+  --button-primary-hover: #383838;
+  --button-secondary-hover: #f2f2f2;
+  min-height: 100svh;
+  font-family: var(--font-geist-sans);
+  grid-template-rows: 20px 1fr 20px;
+  place-items: center;
+  gap: 64px;
+  padding: 80px;
+  display: grid;
+}
+
+@media (prefers-color-scheme: dark) {
+  .page-module__E0kJGG__page {
+    --gray-rgb: 255, 255, 255;
+    --gray-alpha-200: rgba(var(--gray-rgb), .145);
+    --gray-alpha-100: rgba(var(--gray-rgb), .06);
+    --button-primary-hover: #ccc;
+    --button-secondary-hover: #1a1a1a;
+  }
+}
+
+.page-module__E0kJGG__main {
+  flex-direction: column;
+  grid-row-start: 2;
+  gap: 32px;
+  display: flex;
+}
+
+.page-module__E0kJGG__main ol {
+  font-family: var(--font-geist-mono);
+  letter-spacing: -.01em;
+  margin: 0;
+  padding-left: 0;
+  font-size: 14px;
+  line-height: 24px;
+  list-style-position: inside;
+}
+
+.page-module__E0kJGG__main li:not(:last-of-type) {
+  margin-bottom: 8px;
+}
+
+.page-module__E0kJGG__main code {
+  background: var(--gray-alpha-100);
+  border-radius: 4px;
+... (truncated for brevity)
